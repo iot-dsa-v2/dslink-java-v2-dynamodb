@@ -14,6 +14,7 @@ If you are not familiar with DSA and links, an overview can be found at
 This link was built using the DSLink Java SDK which can be found
 [here](https://github.com/iot-dsa-v2/sdk-dslink-java-v2).
 
+To understand link usage, view the [DynamoDB Link User Guide](https://github.com/iot-dsa-v2/dslink-java-v2-dynamodb/blob/master/DynamoDB-Link-User-Guide.pdf).
 
 ## Creating a New Link
 
