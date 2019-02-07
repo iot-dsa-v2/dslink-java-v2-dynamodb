@@ -6,7 +6,7 @@
 
 ## Overview
 
-Link to connect to DynamoDB databases built in Java SDK v2. After installing and staring the link, connect to a existing database through "Connect" action on the root node. Once connected, new databases will show up as children nodes of the root node. Use the "Query/Scan/Put/BatchPut/Update/Delete" action to run NoSQL Queries on the database, use "Disconnect" task to delete the node and disconnect from the database.
+Link to connect to DynamoDB databases built in Java SDK v2. After installing and staring the link, connect to a existing database through "Connect" action on the root node. Once connected, new databases will show up as children nodes of the root node. Use the "Query/Scan/Put/BatchPut/Update/Delete" action to run NoSQL Queries on the database.
 
 To understand link usage, view the [DynamoDB Link User Guide](https://github.com/iot-dsa-v2/dslink-java-v2-dynamodb/blob/master/DynamoDB-Link-User-Guide.pdf).
 
