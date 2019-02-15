@@ -3,6 +3,7 @@ package org.iot.dsa.dslink.dynamodb;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.BatchWriteItemOutcome;
@@ -32,11 +33,13 @@ import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 
 import org.iot.dsa.io.json.JsonReader;
 import org.iot.dsa.node.DSElement;
+import org.iot.dsa.node.DSFlexEnum;
 import org.iot.dsa.node.DSList;
 import org.iot.dsa.node.DSMap;
 import org.iot.dsa.node.DSValueType;
 import org.iot.dsa.util.DSException;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,27 +69,6 @@ public class Util {
     ///////////////////////////////////////////////////////////////////////////
     // Query Items
     ///////////////////////////////////////////////////////////////////////////
-
-    public static DSMap queryDynamodb(AmazonDynamoDB client,
-                                       String tableName,
-                                       String ProjectionExpression,
-                                       String KeyConditionExpression,
-                                       String FilterExpression,
-                                       String ExpressionAttributeNames,
-                                       String ExpressionAttributeValues,
-                                       String ExclusiveStartKey,
-                                       String Select,
-                                       int maxResultSize,
-                                       boolean ScanIndexForward,
-                                       boolean ConsistentRead,
-                                       String ReturnConsumedCapacity){
-        return queryDynamodb(new DynamoDB(client),tableName,
-                ProjectionExpression,KeyConditionExpression,
-                FilterExpression,ExpressionAttributeNames,
-                ExpressionAttributeValues,ExclusiveStartKey,Select,
-                maxResultSize,ScanIndexForward,
-                ConsistentRead,ReturnConsumedCapacity);
-    }
 
     public static DSMap queryDynamodb(DynamoDB client,
                                        String tableName,
@@ -240,7 +222,6 @@ public class Util {
 
         DSElement element = parseJSON(itemsStr);
         if(!(element instanceof DSList)){
-            System.out.println("Error PutBatchItems: Not JSON Array " + element);
             DSException.throwRuntime(new Throwable("Error PutBatchItems: Not JSON Array " + element));
             return null;
         }
@@ -570,7 +551,7 @@ public class Util {
         return primaryKey;
     }
 
-    public static Set getBibarySet(DSList list){
+    public static Set<byte[]> getBibarySet(DSList list){
         Set setC = new LinkedHashSet();
         for (DSElement en : list) {
             setC.add(en.toString().getBytes());
@@ -578,7 +559,7 @@ public class Util {
         return setC;
     }
 
-    public static Set getStringSet(DSList list){
+    public static Set<String> getStringSet(DSList list){
         Set setS = new LinkedHashSet();
         for (DSElement en : list) {
             setS.add(en.toString());
@@ -586,7 +567,7 @@ public class Util {
         return setS;
     }
 
-    public static Set getNumberSet(DSList list){
+    public static Set<BigDecimal> getNumberSet(DSList list){
         Set setN = new LinkedHashSet();
         for (DSElement en : list) {
             setN.add(Double.valueOf(en.toString()));
@@ -594,7 +575,7 @@ public class Util {
         return setN;
     }
 
-    public static Map parseHashMap(DSMap m){
+    public static Map<String,String> parseHashMap(DSMap m){
         Map<String,String> map = new HashMap<>();
         for (DSMap.Entry en : m) {
             map.put(en.getKey().trim(), en.getValue().toString().trim());
@@ -616,4 +597,20 @@ public class Util {
         return m;
     }
 
+    public static DSFlexEnum getTableNames(DynamoDBDSAClient client) {
+        List<String> dbTableList = client.listtable();
+        DSList tableList = new DSList();
+        for(String dtTableName : dbTableList) {
+            tableList.add(dtTableName);
+        }
+        return DSFlexEnum.valueOf(tableList.get(0).toString(),tableList);
+    }
+
+    public static DSFlexEnum getRegions() {
+        DSList regionList = new DSList();
+        for (Regions region : Regions.values()) {
+            regionList.add(region.getName());
+        }
+        return DSFlexEnum.valueOf(regionList.get(0).toString(),regionList);
+    }
 }

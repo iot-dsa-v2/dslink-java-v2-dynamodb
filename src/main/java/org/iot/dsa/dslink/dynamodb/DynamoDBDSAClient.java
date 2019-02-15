@@ -4,32 +4,24 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 
+import org.iot.dsa.logging.DSLogger;
 import org.iot.dsa.node.DSMap;
 
 import java.util.List;
 
-public class DynamoDBDSAClient {
+public class DynamoDBDSAClient extends DSLogger {
 
-    private String accessKey = null;
-    private String secretKey = null;
-    private String region = null;
-    private String endpoint = null;
     private AmazonDynamoDB client;
+    private DynamoDB dynamoDBClient;
 
     public DynamoDBDSAClient(String accessKey, String secretKey, String region, String endpoint){
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.region = region;
-        this.endpoint = endpoint;
         client = Util.connectDynamoDB(accessKey,secretKey,region,endpoint);
+        dynamoDBClient = new DynamoDB(client);
     }
 
-    public void listtable(){
+    public List<String> listtable(){
         ListTablesResult tables = client.listTables();
-        List tnames = tables.getTableNames();
-        for(int i = 0 ; i < tnames.size();i++){
-            System.out.println(tnames.get(i));
-        }
+        return tables.getTableNames();
     }
 
     public DSMap QueryItem(DSMap parameters){
@@ -46,7 +38,7 @@ public class DynamoDBDSAClient {
         boolean sonsistentRead = parameters.getBoolean(Constants.CONSISTENTREAD);
         String returnConsumedCapacity = parameters.getString(Constants.RETURNCONSUMESCAPACITY);
 
-        return Util.queryDynamodb(client,tableName,
+        return Util.queryDynamodb(dynamoDBClient,tableName,
                 projectionExpression,keyConditionExpression,
                 filterExpression,expressionAttributeNames,
                 expressionAttributeValues,exclusiveStartKey,select,
@@ -69,7 +61,7 @@ public class DynamoDBDSAClient {
         String ExclusiveStartKey = parameters.getString(Constants.EXCLUSIVESTARTKEY);
         String ReturnConsumedCapacity = parameters.getString(Constants.RETURNCONSUMESCAPACITY);
 
-        return Util.scanDynamodb(new DynamoDB(client),tableName,ProjectionExpression,
+        return Util.scanDynamodb(dynamoDBClient,tableName,ProjectionExpression,
                 Limit,FilterExpression,ExpressionAttributeNames,
                 ExpressionAttributeValues,Select, ConsistentRead,
                 Segment,TotalSegments,ExclusiveStartKey, ReturnConsumedCapacity);
@@ -82,7 +74,7 @@ public class DynamoDBDSAClient {
         String expressionAttributeNames = parameters.getString(Constants.EXPRESSIONATTRIBUTENAMES);
         String expressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
 
-        Util.putItem(new DynamoDB(client),
+        Util.putItem(dynamoDBClient,
                 tableName,
                 item,
                 conditionExpression,
@@ -99,7 +91,7 @@ public class DynamoDBDSAClient {
         String tableName = parameters.getString(Constants.TABLENAME);
         String items = parameters.getString(Constants.ITEMS);
 
-        Util.batchPutItems(new DynamoDB(client),
+        Util.batchPutItems(dynamoDBClient,
                 tableName,
                 items);
         return "";
@@ -113,7 +105,7 @@ public class DynamoDBDSAClient {
         String expressionAttributeNames = parameters.getString(Constants.EXPRESSIONATTRIBUTENAMES);
         String expressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
 
-        return Util.updateItem(new DynamoDB(client),
+        return Util.updateItem(dynamoDBClient,
                 tableName,
                 primaryKey,
                 updateExpression,
@@ -132,7 +124,7 @@ public class DynamoDBDSAClient {
         String expressionAttributeNames = parameters.getString(Constants.EXPRESSIONATTRIBUTENAMES);
         String expressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
 
-        return Util.deleteItem(new DynamoDB(client),
+        return Util.deleteItem(dynamoDBClient,
                 tableName,
                 primaryKey,
                 conditionExpression,

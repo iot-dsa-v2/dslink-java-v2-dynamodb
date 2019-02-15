@@ -2,26 +2,15 @@ package org.iot.dsa.dslink.example;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.TableCollection;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.iot.dsa.dslink.dynamodb.Util;
 import org.iot.dsa.node.DSMap;
-import org.iot.dsa.node.DSString;
-import org.iot.dsa.security.DSPasswordAes128;
 
-import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 
 public class Test {
@@ -34,7 +23,7 @@ public class Test {
                 "ap-south-1","http://localhost:8000");
 
         //donnectDynamodb();
-        testScan(client);
+        //testScan(client);
         //deleteItem(client);
         //testPut(client);
         //testScan(client);
@@ -42,6 +31,8 @@ public class Test {
         //updateItem123(client);
         //testJSON();
         //testQuery(client);
+        getRegions();
+
     }
 
 private static void testBatchWrite(AmazonDynamoDB client){
@@ -144,42 +135,12 @@ private static void testBatchWrite(AmazonDynamoDB client){
 
     private static void testQuery(AmazonDynamoDB client){
         DSMap result = Util.queryDynamodb(new DynamoDB(client),
-                //"MusicCollection",
                 "Movies",
-                "",
-                //"",
-                //"Artist = :artName ",
+                "#yr",
                 "#yr=:yrval",
                 "",
                 "{\"#yr\":\"year\"}",
-                //"{\":artName\": {\"S\": \"Ketan\"},\":title1\": {\"S\": \"Sample Song\"}}",
-                //"{\":artName\": {\"S\": \"Ketan\"}}",
-                "{\":yrval\":{\"N\":\"2006\"}}",
-                //"{\"sensortype\":{\"S\":\"currentVoltage\"},\"sensordatetime\":{\"S\":\"2018-11-29T15:38:16:215\"}}",
-                "",
-                "",
-                0,
-                true,
-                false,
-                "TOTAL");
-
-        System.out.println(result);
-    }
-
-    private static void testQuery123(AmazonDynamoDB client){
-        DSMap result = Util.queryDynamodb(new DynamoDB(client),
-                //"MusicCollection",
-                "SimpleCatlog",
-                "",
-                //"",
-                //"Artist = :artName ",
-                "Id=:val",
-                "",
-                "",
-                //"{\":artName\": {\"S\": \"Ketan\"},\":title1\": {\"S\": \"Sample Song\"}}",
-                //"{\":artName\": {\"S\": \"Ketan\"}}",
-                "{\":val\":{\"N\":\"201\"}}",
-                //"{\"sensortype\":{\"S\":\"currentVoltage\"},\"sensordatetime\":{\"S\":\"2018-11-29T15:38:16:215\"}}",
+                "{\":yrval\":{\"N\":\"2000\"}}",
                 "",
                 "",
                 0,
@@ -330,5 +291,11 @@ private static void testBatchWrite(AmazonDynamoDB client){
         }
     }
 
+
+    private static void getRegions() {
+        for (Regions region : Regions.values()) {
+            System.out.println("region :"+ region);
+        }
+    }
 }
 

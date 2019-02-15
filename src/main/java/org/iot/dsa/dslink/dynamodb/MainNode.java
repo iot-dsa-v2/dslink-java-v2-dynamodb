@@ -24,10 +24,10 @@ public class MainNode extends AbstractMainNode {
                 return null;
             }
         };
-        act.addParameter(Constants.CONNECTIONNAME, DSValueType.STRING, "AWS Access Key");
+        act.addParameter(Constants.CONNECTIONNAME, DSValueType.STRING, "Connection Name");
         act.addParameter(Constants.ACCESSKEY, DSValueType.STRING, "AWS Access Key");
         act.addParameter(Constants.SECRETKEY, DSValueType.STRING, "AWS Secret Key");
-        act.addParameter(Constants.REGION, DSValueType.STRING, "Region");
+        act.addParameter(Constants.REGION, Util.getRegions(), "Region");
         act.addParameter(Constants.ENDPOINT, DSValueType.STRING, "End Point");
 
         return act;
