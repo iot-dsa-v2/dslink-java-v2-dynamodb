@@ -9,15 +9,14 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 
 import org.iot.dsa.dslink.dynamodb.Util;
+import org.iot.dsa.logging.DSLogger;
 import org.iot.dsa.node.DSMap;
 
 import java.util.List;
 
-public class Test {
+public class Test extends DSLogger {
 
     public static void main(String[] args){
-        System.out.println("Test program");
-
         AmazonDynamoDB client = Util.connectDynamoDB("Jana@1990",
                 "Enator@1990",
                 "ap-south-1","http://localhost:8000");
@@ -31,11 +30,12 @@ public class Test {
         //updateItem123(client);
         //testJSON();
         //testQuery(client);
-        getRegions();
+        Test test = new Test();
+        test.getRegions();
 
     }
 
-private static void testBatchWrite(AmazonDynamoDB client){
+    private void testBatchWrite(AmazonDynamoDB client){
         String jsonArray = "[\n" +
                 "{ \n" +
                 "        \"Artist\": \"Ketan\",\n" +
@@ -52,7 +52,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
         Util.batchPutItems(new DynamoDB(client),"MusicCollection",jsonArray);
     }
 
-    private static void testPut(AmazonDynamoDB client){
+    private void testPut(AmazonDynamoDB client){
         String itemStr = "{\n" +
                 "        \"year\": 2018,\n" +
                 "        \"title\": \"movie2018\",\n" +
@@ -93,7 +93,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
 
     }
 
-    private static void testQuery123456(AmazonDynamoDB client){
+    private void testQuery123456(AmazonDynamoDB client){
         DSMap result = Util.queryDynamodb(new DynamoDB(client),
                 //"MusicCollection",
                 "Movies",
@@ -114,10 +114,10 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 false,
                 "TOTAL");
 
-        System.out.println(result);
+        info(result);
     }
 
-//    private static void testQuery(AmazonDynamoDB client){
+//    private void testQuery(AmazonDynamoDB client){
 //        listTable(client);
 //        String result = Util.queryDynamodb(new DynamoDB(client),
 //                "Movies",
@@ -133,7 +133,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
 //        System.out.println(result);
 //    }
 
-    private static void testQuery(AmazonDynamoDB client){
+    private void testQuery(AmazonDynamoDB client){
         DSMap result = Util.queryDynamodb(new DynamoDB(client),
                 "Movies",
                 "#yr",
@@ -148,10 +148,10 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 false,
                 "TOTAL");
 
-        System.out.println(result);
+        info(result);
     }
 
-    private static void testScan(AmazonDynamoDB client){
+    private void testScan(AmazonDynamoDB client){
         String result = Util.scanDynamodb(new DynamoDB(client),
                 "SimpleCatlog",
                 "",
@@ -166,10 +166,10 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 "",
                 "NONE");
 
-        System.out.println(result);
+        info(result);
     }
 
-    private static void deleteItem(AmazonDynamoDB client) {
+    private void deleteItem(AmazonDynamoDB client) {
         Util.deleteItem(new DynamoDB(client),
                 "Employee",
                 "{\"EmpId\":{\"N\":\"20001\"},\"Salary\":{\"S\":\"56000\"}}",
@@ -181,7 +181,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 "NONE");
     }
 
-    private static void updateItem(AmazonDynamoDB client) {
+    private void updateItem(AmazonDynamoDB client) {
         Util.updateItem(new DynamoDB(client),
                 "Employee",
                 "{\"EmpId\":{\"N\":\"1006\"},\"Salary\":{\"S\":\"9000\"}}",
@@ -194,7 +194,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 "ALL_NEW");
     }
 
-    private static void updateItem12345(AmazonDynamoDB client) {
+    private void updateItem12345(AmazonDynamoDB client) {
         Util.updateItem(new DynamoDB(client),
                 "Employee",
                 "{\"EmpId\":{\"N\":\"1006\"},\"Salary\":{\"S\":\"9000\"}}",
@@ -208,7 +208,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
     }
 
 
-    private static void updateItem123(AmazonDynamoDB client) {
+    private void updateItem123(AmazonDynamoDB client) {
         Util.updateItem(new DynamoDB(client),
                 "SimpleCatlog",
                 "{\"Id\":{\"N\":\"202\"},\"Title\":{\"S\":\"21-Bike-202\"}}",
@@ -221,7 +221,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 "NONE");
     }
 
-    private static void testEmoScan(AmazonDynamoDB client){
+    private void testEmoScan(AmazonDynamoDB client){
         String result = Util.scanDynamodb(new DynamoDB(client),
                 "SimpleCatlog",
                 "",
@@ -239,7 +239,7 @@ private static void testBatchWrite(AmazonDynamoDB client){
         System.out.println(result);
     }
 
-    private static void testJSON(){
+    private void testJSON(){
         //String jsonStr = "{ \":v1\": {\"S\": \"No One You Know\"} }";
         //String jsonStr = "{ \":v1\": [\"S\",\"No One You Know\"] }";
         String jsonStr = "{\n" +
@@ -256,12 +256,12 @@ private static void testBatchWrite(AmazonDynamoDB client){
                 "}";
         DSMap map = Util.parseJsonMap(jsonStr);
         for (DSMap.Entry en : map) {
-            System.out.println(en.getKey() + " " + en.getValue() + " " + ((DSMap)en.getValue()).firstEntry().getValue().getClass() );
+            info(en.getKey() + " " + en.getValue() + " " + ((DSMap)en.getValue()).firstEntry().getValue().getClass() );
         }
         Util.getValueMap(map);
     }
 
-    private static void donnectDynamodb(){
+    private void donnectDynamodb(){
 
         //AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
         //        .withRegion(Regions.US_WEST_2)
@@ -283,18 +283,18 @@ private static void testBatchWrite(AmazonDynamoDB client){
 
     }
 
-    private static void listTable(AmazonDynamoDB dynamoDB) {
+    private void listTable(AmazonDynamoDB dynamoDB) {
         ListTablesResult tables = dynamoDB.listTables();
         List tnames = tables.getTableNames();
         for(int i = 0 ; i < tnames.size();i++){
-            System.out.println(tnames.get(i));
+            info(tnames.get(i));
         }
     }
 
 
-    private static void getRegions() {
+    private void getRegions() {
         for (Regions region : Regions.values()) {
-            System.out.println("region :"+ region);
+            info("region :"+ region);
         }
     }
 }

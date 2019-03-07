@@ -25,10 +25,10 @@ public class DynamoDBNode extends DSBaseConnection {
     // Fields
     ///////////////////////////////////////////////////////////////////////////
 
-    final DSInfo access_key = getInfo(Constants.ACCESSKEY);
-    final DSInfo secret_key = getInfo(Constants.SECRETKEY);
-    final DSInfo region = getInfo(Constants.REGION);
-    final DSInfo endpoint = getInfo(Constants.ENDPOINT);
+    private final DSInfo access_key = getInfo(Constants.ACCESSKEY);
+    private final DSInfo secret_key = getInfo(Constants.SECRETKEY);
+    private final DSInfo region = getInfo(Constants.REGION);
+    private final DSInfo endpoint = getInfo(Constants.ENDPOINT);
 
     //private DSMap parameters;
     private DynamoDBDSAClient client;

@@ -4,12 +4,11 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 
-import org.iot.dsa.logging.DSLogger;
 import org.iot.dsa.node.DSMap;
 
 import java.util.List;
 
-public class DynamoDBDSAClient extends DSLogger {
+public class DynamoDBDSAClient {
 
     private AmazonDynamoDB client;
     private DynamoDB dynamoDBClient;
@@ -31,7 +30,7 @@ public class DynamoDBDSAClient extends DSLogger {
         String filterExpression = parameters.getString(Constants.FILTEREXPRESSION);
         String expressionAttributeNames = parameters.getString(Constants.EXPRESSIONATTRIBUTENAMES);
         String expressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
-        String exclusiveStartKey = parameters.getString(Constants.EXCLUSIVESTARTKEY);;
+        String exclusiveStartKey = parameters.getString(Constants.EXCLUSIVESTARTKEY);
         String select = parameters.getString(Constants.SELECT);
         int limit = parameters.getInt(Constants.LIMIT);
         boolean scanIndexForward = parameters.getBoolean(Constants.SCANINDEXFORWARD);

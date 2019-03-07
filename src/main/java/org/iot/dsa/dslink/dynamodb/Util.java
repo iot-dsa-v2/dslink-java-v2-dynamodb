@@ -32,6 +32,7 @@ import com.amazonaws.services.dynamodbv2.model.Select;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 
 import org.iot.dsa.io.json.JsonReader;
+import org.iot.dsa.logging.DSLogger;
 import org.iot.dsa.node.DSElement;
 import org.iot.dsa.node.DSFlexEnum;
 import org.iot.dsa.node.DSList;
@@ -61,9 +62,7 @@ public class Util {
             AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(endPoint, region);
             dynamoDBclientBuilder.setEndpointConfiguration(endpoint);
         }
-        AmazonDynamoDB client = dynamoDBclientBuilder.build() ;
-
-        return client;
+        return dynamoDBclientBuilder.build() ;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -219,7 +218,7 @@ public class Util {
     public static String batchPutItems(DynamoDB client,
                                String tableName,
                                String itemsStr){
-
+        DSLogger log = new DSLogger();
         DSElement element = parseJSON(itemsStr);
         if(!(element instanceof DSList)){
             DSException.throwRuntime(new Throwable("Error PutBatchItems: Not JSON Array " + element));
@@ -228,8 +227,8 @@ public class Util {
         TableWriteItems tableWriteItems = new TableWriteItems(tableName);
         ArrayList itemsToPut = new ArrayList();
         for (DSElement en : (DSList)element) {
-            itemsToPut.add(Item.fromJSON(en.toString())) ;
-            System.out.println(en);
+            itemsToPut.add(Item.fromJSON(en.toString()));
+            log.info(en);
         }
         tableWriteItems.withItemsToPut(itemsToPut);
 
@@ -238,11 +237,11 @@ public class Util {
             Map<String, List<WriteRequest>> unprocessedItems = outcome.getUnprocessedItems();
 
             if (outcome.getUnprocessedItems().size() > 0) {
-                System.out.println("Retrieving the unprocessed items");
+                log.info("Retrieving the unprocessed items");
                 outcome = client.batchWriteItemUnprocessed(unprocessedItems);
             }
             else {
-                System.out.println("No unprocessed items found");
+                log.info("No unprocessed items found");
             }
         } while (outcome.getUnprocessedItems().size() > 0);
 
@@ -342,7 +341,6 @@ public class Util {
                 value=value.replaceFirst(":","\":");
                 value=value.replaceFirst(": ",":\"");
                 value=value.replaceFirst(",}","\"}");
-                //System.out.println(key + " = " + value + " ");
                 lastKeyMap.put(key,parseJsonMap(value));
             }
             resultMap.put("LastEvaluatedKey",lastKeyMap);
@@ -457,6 +455,7 @@ public class Util {
 
     public static ValueMap getValueMap(DSMap valueDSMap){
         ValueMap valueMap = new ValueMap();
+        DSLogger log = new DSLogger();
         for (DSMap.Entry en : valueDSMap) {
             String key = en.getKey();
             if(en.getValue() instanceof DSMap){
@@ -495,17 +494,17 @@ public class Util {
                         valueMap.withStringSet(key,getStringSet((DSList)val));
                         break;
                     default :
-                        System.out.println("Wrong data type for " + key);
+                        log.error("Wrong data type for " + key);
                         break;
                 }
             } else {
-                System.out.println(" Wrong format for " + key);
+                log.error(" Wrong format for " + key);
             }
         }
         return valueMap;
     }
 
-    public static List getList(DSList list){
+    public static List<String> getList(DSList list){
         List listA = new ArrayList();
         for (DSElement en : list) {
             if(en.getElementType().equals(DSValueType.NUMBER)){
