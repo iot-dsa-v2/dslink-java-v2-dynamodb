@@ -223,7 +223,7 @@ public class Util {
             return null;
         }
         TableWriteItems tableWriteItems = new TableWriteItems(tableName);
-        ArrayList itemsToPut = new ArrayList(); //TODO - Change
+        ArrayList<Item> itemsToPut = new ArrayList<>();
         for (DSElement en : (DSList)element) {
             itemsToPut.add(Item.fromJSON(en.toString()));
             log.info(en);
