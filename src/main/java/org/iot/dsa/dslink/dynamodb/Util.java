@@ -12,7 +12,6 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
@@ -37,7 +36,6 @@ import org.iot.dsa.node.DSElement;
 import org.iot.dsa.node.DSFlexEnum;
 import org.iot.dsa.node.DSList;
 import org.iot.dsa.node.DSMap;
-import org.iot.dsa.node.DSValueType;
 import org.iot.dsa.util.DSException;
 
 import java.math.BigDecimal;
@@ -201,7 +199,7 @@ public class Util {
         }
 
        try {
-            PutItemOutcome putOutcome = table.putItem(putItemSpec);
+            table.putItem(putItemSpec);
         }
         catch (Exception e) {
             String message = e.getLocalizedMessage() + "\n" + "Error PutItem "+putItemSpec.getRequest();
@@ -225,7 +223,7 @@ public class Util {
             return null;
         }
         TableWriteItems tableWriteItems = new TableWriteItems(tableName);
-        ArrayList itemsToPut = new ArrayList();
+        ArrayList itemsToPut = new ArrayList(); //TODO - Change
         for (DSElement en : (DSList)element) {
             itemsToPut.add(Item.fromJSON(en.toString()));
             log.info(en);
@@ -505,13 +503,9 @@ public class Util {
     }
 
     public static List<String> getList(DSList list){
-        List listA = new ArrayList();
+        List<String> listA = new ArrayList<>();
         for (DSElement en : list) {
-            if(en.getElementType().equals(DSValueType.NUMBER)){
-                listA.add(Double.valueOf(en.toDouble()));
-            }else {
-                listA.add(en.toString());
-            }
+            listA.add(en.toString());
         }
         return listA;
     }
@@ -551,7 +545,7 @@ public class Util {
     }
 
     public static Set<byte[]> getBibarySet(DSList list){
-        Set setC = new LinkedHashSet();
+        Set<byte[]> setC = new LinkedHashSet<>();
         for (DSElement en : list) {
             setC.add(en.toString().getBytes());
         }
@@ -559,7 +553,7 @@ public class Util {
     }
 
     public static Set<String> getStringSet(DSList list){
-        Set setS = new LinkedHashSet();
+        Set<String> setS = new LinkedHashSet<>();
         for (DSElement en : list) {
             setS.add(en.toString());
         }
@@ -567,9 +561,9 @@ public class Util {
     }
 
     public static Set<BigDecimal> getNumberSet(DSList list){
-        Set setN = new LinkedHashSet();
+        Set<BigDecimal> setN = new LinkedHashSet<>();
         for (DSElement en : list) {
-            setN.add(Double.valueOf(en.toString()));
+            setN.add(BigDecimal.valueOf(Double.valueOf(en.toString())));
         }
         return setN;
     }

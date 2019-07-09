@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.iot-dsa-v2.sdk-dslink-java-v2:dslink-v2-websocket:v0.48.0'
+    implementation 'com.github.iot-dsa-v2.sdk-dslink-java-v2:dslink-v2-websocket:v0.62.0'
     implementation 'com.github.iot-dsa-v2:dslink-java-v2-jdbc:v+'
     compile 'com.amazonaws:aws-java-sdk-dynamodb:+'
 }

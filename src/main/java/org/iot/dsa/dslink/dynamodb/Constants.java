@@ -6,7 +6,6 @@ public class Constants {
     public static final String DYNAMODBDSLINKDOC = "https://github.com/iot-dsa-v2/dslink-java-v2-dynamodb";
 
     // Actions
-    public static final String CONNECTDYNAMODB = "Add Connection";
     public static final String EDITDYNAMODB = "Edit Settings";
     public static final String QUERYDYNAMODB = "Query";
     public static final String SCANDYNAMODB = "Scan";
@@ -35,8 +34,6 @@ public class Constants {
     public static final String SCANINDEXFORWARD = "Scan Index Forward";
     public static final String CONSISTENTREAD = "Consistent Read";
     public static final String RETURNCONSUMESCAPACITY = "Return Consumed Capacity";
-    public static final String RETURNVALUES = "Return Values";
-    public static final String RETURNITEMCOLLECTIONMETRICS = "Return Item Collection Metrics";
     public static final String RESULT = "Result";
     public static final String SEGMENT = "Segment";
     public static final String TOTALSEGMENTS = "Total Segments";

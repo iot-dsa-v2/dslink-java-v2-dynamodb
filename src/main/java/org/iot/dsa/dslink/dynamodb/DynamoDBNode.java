@@ -46,61 +46,61 @@ public class DynamoDBNode extends DSBaseConnection {
     @Override
     protected void checkConfig() {
         if (access_key.getElement().toString().isEmpty()) {
-            configFault("Empty Access Key");
+            connDown("Empty Access Key");
             throw new IllegalStateException("Empty Access Key");
         }
         if (getSecretKey().trim().equals("")) {
-            configFault("Empty Secret Key");
+            connDown("Empty Secret Key");
             throw new IllegalStateException("Empty Secret Key");
         }
         if (region.getElement().toString().isEmpty()) {
-            configFault("Empty Region");
+            connDown("Empty Region");
             throw new IllegalStateException("Empty Region");
         }else {
             try {
                 com.amazonaws.regions.Regions.fromName(region.getElement().toString());
             } catch (IllegalArgumentException ex){
-                configFault("Wrong Region");
+                connDown("Wrong Region");
                 throw new IllegalStateException("Wrong Region");
             }
         }
         if (endpoint.getElement().toString().isEmpty()) {
-            configFault("Empty End-Point");
+            connDown("Empty End-Point");
             throw new IllegalStateException("Empty End-Point");
         }
-        configOk();
+        connOk();
     }
 
     public DynamoDBNode(DSMap parameters){
         setParameters(parameters);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Public Methods
-    ///////////////////////////////////////////////////////////////////////////
-    /**
-     * Override the method and add 'Edit Settings' action in default action group.
-     */
-    @Override
-    public void getDynamicActions(DSInfo target, Collection<String> bucket) {
-        if(target.getName().equals(this.getName())){
-            bucket.add(Constants.EDITDYNAMODB);
-        }
-        super.getDynamicActions(target, bucket);
-    }
-
-    /**
-     * Override the method and add 'Edit Settings' action in default action group.
-     */
-    @Override
-    public DSInfo getDynamicAction(DSInfo target, String name) {
-        if(name.equals(Constants.EDITDYNAMODB) && this.isStable()){
-            DSInfo info = actionInfo(name, makeEditDynamoDBAction()) ;
-            info.getMetadata().setActionGroup(DSAction.EDIT_GROUP, null);
-            return info;
-        }
-        return super.getDynamicAction(target, name);
-    }
+//    ///////////////////////////////////////////////////////////////////////////
+//    // Public Methods
+//    ///////////////////////////////////////////////////////////////////////////
+//    /**
+//     * Override the method and add 'Edit Settings' action in default action group.
+//     */
+//    @Override
+//    public void getDynamicActions(DSInfo target, Collection<String> bucket) {
+//        if(target.getName().equals(this.getName())){
+//            bucket.add(Constants.EDITDYNAMODB);
+//        }
+//        super.getDynamicActions(target, bucket);
+//    }
+//
+//    /**
+//     * Override the method and add 'Edit Settings' action in default action group.
+//     */
+//    @Override
+//    public DSInfo getDynamicAction(DSInfo target, String name) {
+//        if(name.equals(Constants.EDITDYNAMODB) && this.isStable()){
+//            DSInfo info = actionInfo(name, makeEditDynamoDBAction()) ;
+//            info.getMetadata().setActionGroup(DSAction.EDIT_GROUP, null);
+//            return info;
+//        }
+//        return super.getDynamicAction(target, name);
+//    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Protected Methods
@@ -114,7 +114,7 @@ public class DynamoDBNode extends DSBaseConnection {
         super.declareDefaults();
         // Add parameters.
         declareDefault(Constants.ACCESSKEY, DSString.valueOf("")).setReadOnly(true);
-        declareDefault(Constants.SECRETKEY, DSPasswordAes128.NULL).setReadOnly(true).setHidden(true);
+        declareDefault(Constants.SECRETKEY, DSPasswordAes128.NULL).setReadOnly(true);
         declareDefault(Constants.REGION, Util.getRegions()).setReadOnly(true);
         declareDefault(Constants.ENDPOINT, DSString.valueOf("")).setReadOnly(true);
     }
@@ -141,6 +141,7 @@ public class DynamoDBNode extends DSBaseConnection {
         put(Constants.BATCHPUTITEMSDYNAMODB, makeBatchPutItemDynamoDBAction());
         put(Constants.UPDATEITEMDYNAMODB, makeUpdateItemDynamoDBAction());
         put(Constants.DELETEITEMDYNAMODB, makeDeleteItemDynamoDBAction());
+        put(Constants.EDITDYNAMODB, makeEditDynamoDBAction());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,7 +162,7 @@ public class DynamoDBNode extends DSBaseConnection {
             client.listtable();
             connOk();
         } catch (Exception e) {
-            configFault(e.getMessage().toString());
+            connDown(e.getMessage().toString());
             throw new IllegalStateException(e.getMessage().toString());
         }
     }

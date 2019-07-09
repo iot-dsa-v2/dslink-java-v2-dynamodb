@@ -34,7 +34,7 @@ public class MainNode extends AbstractMainNode {
     }
 
     protected String getHelpUrl() {
-        return "https://github.com/iot-dsa-v2/dslink-java-v2-dynamodb";
+        return Constants.DYNAMODBDSLINKDOC;
     }
 
     ///////////////////////////////////////////////////////////////////////////
