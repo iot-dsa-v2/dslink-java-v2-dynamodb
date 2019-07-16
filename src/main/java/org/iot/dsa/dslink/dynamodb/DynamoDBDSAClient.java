@@ -32,7 +32,7 @@ public class DynamoDBDSAClient {
         String expressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
         String exclusiveStartKey = parameters.getString(Constants.EXCLUSIVESTARTKEY);
         String select = parameters.getString(Constants.SELECT);
-        int limit = parameters.getInt(Constants.LIMIT);
+        int limit = Util.checkNullValues(parameters.getString(Constants.LIMIT));
         boolean scanIndexForward = parameters.getBoolean(Constants.SCANINDEXFORWARD);
         boolean sonsistentRead = parameters.getBoolean(Constants.CONSISTENTREAD);
         String returnConsumedCapacity = parameters.getString(Constants.RETURNCONSUMESCAPACITY);
@@ -49,14 +49,14 @@ public class DynamoDBDSAClient {
 
         String tableName = parameters.getString(Constants.TABLENAME);
         String ProjectionExpression = parameters.getString(Constants.PROJECTIONEXPRESSION);
-        int Limit = parameters.getInt(Constants.LIMIT);
+        int Limit = Util.checkNullValues(parameters.getString(Constants.LIMIT));
         String FilterExpression = parameters.getString(Constants.FILTEREXPRESSION);
         String ExpressionAttributeNames = parameters.getString(Constants.EXPRESSIONATTRIBUTENAMES);
         String ExpressionAttributeValues = parameters.getString(Constants.EXPRESSIONATTRIBUTEVALUES);
         String Select = parameters.getString(Constants.SELECT);
         boolean ConsistentRead = parameters.getBoolean(Constants.CONSISTENTREAD);
-        int Segment = parameters.getInt(Constants.SEGMENT);
-        int TotalSegments = parameters.getInt(Constants.TOTALSEGMENTS);
+        int Segment = Util.checkNullValues(parameters.getString(Constants.SEGMENT));
+        int TotalSegments = Util.checkNullValues(parameters.getString(Constants.TOTALSEGMENTS));
         String ExclusiveStartKey = parameters.getString(Constants.EXCLUSIVESTARTKEY);
         String ReturnConsumedCapacity = parameters.getString(Constants.RETURNCONSUMESCAPACITY);
 

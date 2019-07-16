@@ -17,8 +17,6 @@ import org.iot.dsa.node.action.DSActionValues;
 import org.iot.dsa.security.DSPasswordAes128;
 import org.iot.dsa.util.DSException;
 
-import java.util.Collection;
-
 public class DynamoDBNode extends DSBaseConnection {
 
     ///////////////////////////////////////////////////////////////////////////

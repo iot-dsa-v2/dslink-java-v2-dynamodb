@@ -270,6 +270,7 @@ public class Util {
         if(ProjectionExpression!=null && !ProjectionExpression.equals("")){
             scanSpec = scanSpec.withProjectionExpression(ProjectionExpression);
         }
+        DSLogger log = new DSLogger();
         if(Limit > 0) {
             scanSpec = scanSpec.withMaxResultSize(Limit);
         }
@@ -605,5 +606,12 @@ public class Util {
             regionList.add(region.getName());
         }
         return DSFlexEnum.valueOf(regionList.get(0).toString(),regionList);
+    }
+
+    public static int checkNullValues(String paramVal) {
+        if(paramVal == null)
+            return 0;
+        else
+            return Integer.parseInt(paramVal);
     }
 }
