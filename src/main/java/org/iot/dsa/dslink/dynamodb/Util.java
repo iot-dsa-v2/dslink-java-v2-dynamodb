@@ -287,7 +287,7 @@ public class Util {
             scanSpec = scanSpec.withSelect(Select.fromValue(select));
         }
         scanSpec = scanSpec.withConsistentRead(ConsistentRead);
-        if(Segment > 0){
+        if(Segment >= 0 && TotalSegments != 0){
             scanSpec = scanSpec.withSegment(Segment);
         }
         if(TotalSegments > 0){
