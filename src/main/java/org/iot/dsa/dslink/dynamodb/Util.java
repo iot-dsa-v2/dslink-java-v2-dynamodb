@@ -3,6 +3,7 @@ package org.iot.dsa.dslink.dynamodb;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.BatchWriteItemOutcome;
@@ -11,7 +12,6 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
@@ -31,12 +31,14 @@ import com.amazonaws.services.dynamodbv2.model.Select;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 
 import org.iot.dsa.io.json.JsonReader;
+import org.iot.dsa.logging.DSLogger;
 import org.iot.dsa.node.DSElement;
+import org.iot.dsa.node.DSFlexEnum;
 import org.iot.dsa.node.DSList;
 import org.iot.dsa.node.DSMap;
-import org.iot.dsa.node.DSValueType;
 import org.iot.dsa.util.DSException;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,35 +60,12 @@ public class Util {
             AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(endPoint, region);
             dynamoDBclientBuilder.setEndpointConfiguration(endpoint);
         }
-        AmazonDynamoDB client = dynamoDBclientBuilder.build() ;
-
-        return client;
+        return dynamoDBclientBuilder.build() ;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Query Items
     ///////////////////////////////////////////////////////////////////////////
-
-    public static DSMap queryDynamodb(AmazonDynamoDB client,
-                                       String tableName,
-                                       String ProjectionExpression,
-                                       String KeyConditionExpression,
-                                       String FilterExpression,
-                                       String ExpressionAttributeNames,
-                                       String ExpressionAttributeValues,
-                                       String ExclusiveStartKey,
-                                       String Select,
-                                       int maxResultSize,
-                                       boolean ScanIndexForward,
-                                       boolean ConsistentRead,
-                                       String ReturnConsumedCapacity){
-        return queryDynamodb(new DynamoDB(client),tableName,
-                ProjectionExpression,KeyConditionExpression,
-                FilterExpression,ExpressionAttributeNames,
-                ExpressionAttributeValues,ExclusiveStartKey,Select,
-                maxResultSize,ScanIndexForward,
-                ConsistentRead,ReturnConsumedCapacity);
-    }
 
     public static DSMap queryDynamodb(DynamoDB client,
                                        String tableName,
@@ -220,7 +199,7 @@ public class Util {
         }
 
        try {
-            PutItemOutcome putOutcome = table.putItem(putItemSpec);
+            table.putItem(putItemSpec);
         }
         catch (Exception e) {
             String message = e.getLocalizedMessage() + "\n" + "Error PutItem "+putItemSpec.getRequest();
@@ -237,18 +216,17 @@ public class Util {
     public static String batchPutItems(DynamoDB client,
                                String tableName,
                                String itemsStr){
-
+        DSLogger log = new DSLogger();
         DSElement element = parseJSON(itemsStr);
         if(!(element instanceof DSList)){
-            System.out.println("Error PutBatchItems: Not JSON Array " + element);
             DSException.throwRuntime(new Throwable("Error PutBatchItems: Not JSON Array " + element));
             return null;
         }
         TableWriteItems tableWriteItems = new TableWriteItems(tableName);
-        ArrayList itemsToPut = new ArrayList();
+        ArrayList<Item> itemsToPut = new ArrayList<>();
         for (DSElement en : (DSList)element) {
-            itemsToPut.add(Item.fromJSON(en.toString())) ;
-            System.out.println(en);
+            itemsToPut.add(Item.fromJSON(en.toString()));
+            log.info(en);
         }
         tableWriteItems.withItemsToPut(itemsToPut);
 
@@ -257,11 +235,11 @@ public class Util {
             Map<String, List<WriteRequest>> unprocessedItems = outcome.getUnprocessedItems();
 
             if (outcome.getUnprocessedItems().size() > 0) {
-                System.out.println("Retrieving the unprocessed items");
+                log.info("Retrieving the unprocessed items");
                 outcome = client.batchWriteItemUnprocessed(unprocessedItems);
             }
             else {
-                System.out.println("No unprocessed items found");
+                log.info("No unprocessed items found");
             }
         } while (outcome.getUnprocessedItems().size() > 0);
 
@@ -292,6 +270,7 @@ public class Util {
         if(ProjectionExpression!=null && !ProjectionExpression.equals("")){
             scanSpec = scanSpec.withProjectionExpression(ProjectionExpression);
         }
+        DSLogger log = new DSLogger();
         if(Limit > 0) {
             scanSpec = scanSpec.withMaxResultSize(Limit);
         }
@@ -308,7 +287,7 @@ public class Util {
             scanSpec = scanSpec.withSelect(Select.fromValue(select));
         }
         scanSpec = scanSpec.withConsistentRead(ConsistentRead);
-        if(Segment > 0){
+        if(Segment >= 0 && TotalSegments != 0){
             scanSpec = scanSpec.withSegment(Segment);
         }
         if(TotalSegments > 0){
@@ -361,7 +340,6 @@ public class Util {
                 value=value.replaceFirst(":","\":");
                 value=value.replaceFirst(": ",":\"");
                 value=value.replaceFirst(",}","\"}");
-                //System.out.println(key + " = " + value + " ");
                 lastKeyMap.put(key,parseJsonMap(value));
             }
             resultMap.put("LastEvaluatedKey",lastKeyMap);
@@ -476,6 +454,7 @@ public class Util {
 
     public static ValueMap getValueMap(DSMap valueDSMap){
         ValueMap valueMap = new ValueMap();
+        DSLogger log = new DSLogger();
         for (DSMap.Entry en : valueDSMap) {
             String key = en.getKey();
             if(en.getValue() instanceof DSMap){
@@ -514,24 +493,20 @@ public class Util {
                         valueMap.withStringSet(key,getStringSet((DSList)val));
                         break;
                     default :
-                        System.out.println("Wrong data type for " + key);
+                        log.error("Wrong data type for " + key);
                         break;
                 }
             } else {
-                System.out.println(" Wrong format for " + key);
+                log.error(" Wrong format for " + key);
             }
         }
         return valueMap;
     }
 
-    public static List getList(DSList list){
-        List listA = new ArrayList();
+    public static List<String> getList(DSList list){
+        List<String> listA = new ArrayList<>();
         for (DSElement en : list) {
-            if(en.getElementType().equals(DSValueType.NUMBER)){
-                listA.add(Double.valueOf(en.toDouble()));
-            }else {
-                listA.add(en.toString());
-            }
+            listA.add(en.toString());
         }
         return listA;
     }
@@ -570,31 +545,31 @@ public class Util {
         return primaryKey;
     }
 
-    public static Set getBibarySet(DSList list){
-        Set setC = new LinkedHashSet();
+    public static Set<byte[]> getBibarySet(DSList list){
+        Set<byte[]> setC = new LinkedHashSet<>();
         for (DSElement en : list) {
             setC.add(en.toString().getBytes());
         }
         return setC;
     }
 
-    public static Set getStringSet(DSList list){
-        Set setS = new LinkedHashSet();
+    public static Set<String> getStringSet(DSList list){
+        Set<String> setS = new LinkedHashSet<>();
         for (DSElement en : list) {
             setS.add(en.toString());
         }
         return setS;
     }
 
-    public static Set getNumberSet(DSList list){
-        Set setN = new LinkedHashSet();
+    public static Set<BigDecimal> getNumberSet(DSList list){
+        Set<BigDecimal> setN = new LinkedHashSet<>();
         for (DSElement en : list) {
-            setN.add(Double.valueOf(en.toString()));
+            setN.add(BigDecimal.valueOf(Double.valueOf(en.toString())));
         }
         return setN;
     }
 
-    public static Map parseHashMap(DSMap m){
+    public static Map<String,String> parseHashMap(DSMap m){
         Map<String,String> map = new HashMap<>();
         for (DSMap.Entry en : m) {
             map.put(en.getKey().trim(), en.getValue().toString().trim());
@@ -616,4 +591,27 @@ public class Util {
         return m;
     }
 
+    public static DSFlexEnum getTableNames(DynamoDBDSAClient client) {
+        List<String> dbTableList = client.listtable();
+        DSList tableList = new DSList();
+        for(String dtTableName : dbTableList) {
+            tableList.add(dtTableName);
+        }
+        return DSFlexEnum.valueOf(tableList.get(0).toString(),tableList);
+    }
+
+    public static DSFlexEnum getRegions() {
+        DSList regionList = new DSList();
+        for (Regions region : Regions.values()) {
+            regionList.add(region.getName());
+        }
+        return DSFlexEnum.valueOf(regionList.get(0).toString(),regionList);
+    }
+
+    public static int checkNullValues(String paramVal) {
+        if(paramVal == null)
+            return 0;
+        else
+            return Integer.parseInt(paramVal);
+    }
 }

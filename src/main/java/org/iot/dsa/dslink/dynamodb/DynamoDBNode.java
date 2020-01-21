@@ -17,18 +17,16 @@ import org.iot.dsa.node.action.DSActionValues;
 import org.iot.dsa.security.DSPasswordAes128;
 import org.iot.dsa.util.DSException;
 
-import java.util.Collection;
-
 public class DynamoDBNode extends DSBaseConnection {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields
     ///////////////////////////////////////////////////////////////////////////
 
-    final DSInfo access_key = getInfo(Constants.ACCESSKEY);
-    final DSInfo secret_key = getInfo(Constants.SECRETKEY);
-    final DSInfo region = getInfo(Constants.REGION);
-    final DSInfo endpoint = getInfo(Constants.ENDPOINT);
+    private final DSInfo access_key = getInfo(Constants.ACCESSKEY);
+    private final DSInfo secret_key = getInfo(Constants.SECRETKEY);
+    private final DSInfo region = getInfo(Constants.REGION);
+    private final DSInfo endpoint = getInfo(Constants.ENDPOINT);
 
     //private DSMap parameters;
     private DynamoDBDSAClient client;
@@ -46,61 +44,61 @@ public class DynamoDBNode extends DSBaseConnection {
     @Override
     protected void checkConfig() {
         if (access_key.getElement().toString().isEmpty()) {
-            configFault("Empty Access Key");
+            connDown("Empty Access Key");
             throw new IllegalStateException("Empty Access Key");
         }
         if (getSecretKey().trim().equals("")) {
-            configFault("Empty Secret Key");
+            connDown("Empty Secret Key");
             throw new IllegalStateException("Empty Secret Key");
         }
         if (region.getElement().toString().isEmpty()) {
-            configFault("Empty Region");
+            connDown("Empty Region");
             throw new IllegalStateException("Empty Region");
         }else {
             try {
                 com.amazonaws.regions.Regions.fromName(region.getElement().toString());
             } catch (IllegalArgumentException ex){
-                configFault("Wrong Region");
+                connDown("Wrong Region");
                 throw new IllegalStateException("Wrong Region");
             }
         }
         if (endpoint.getElement().toString().isEmpty()) {
-            configFault("Empty End-Point");
+            connDown("Empty End-Point");
             throw new IllegalStateException("Empty End-Point");
         }
-        configOk();
+        connOk();
     }
 
     public DynamoDBNode(DSMap parameters){
         setParameters(parameters);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Public Methods
-    ///////////////////////////////////////////////////////////////////////////
-    /**
-     * Override the method and add 'Edit Settings' action in default action group.
-     */
-    @Override
-    public void getDynamicActions(DSInfo target, Collection<String> bucket) {
-        if(target.getName().equals(this.getName())){
-            bucket.add(Constants.EDITDYNAMODB);
-        }
-        super.getDynamicActions(target, bucket);
-    }
-
-    /**
-     * Override the method and add 'Edit Settings' action in default action group.
-     */
-    @Override
-    public DSInfo getDynamicAction(DSInfo target, String name) {
-        if(name.equals(Constants.EDITDYNAMODB) && this.isStable()){
-            DSInfo info = actionInfo(name, makeEditDynamoDBAction()) ;
-            info.getMetadata().setActionGroup(DSAction.EDIT_GROUP, null);
-            return info;
-        }
-        return super.getDynamicAction(target, name);
-    }
+//    ///////////////////////////////////////////////////////////////////////////
+//    // Public Methods
+//    ///////////////////////////////////////////////////////////////////////////
+//    /**
+//     * Override the method and add 'Edit Settings' action in default action group.
+//     */
+//    @Override
+//    public void getDynamicActions(DSInfo target, Collection<String> bucket) {
+//        if(target.getName().equals(this.getName())){
+//            bucket.add(Constants.EDITDYNAMODB);
+//        }
+//        super.getDynamicActions(target, bucket);
+//    }
+//
+//    /**
+//     * Override the method and add 'Edit Settings' action in default action group.
+//     */
+//    @Override
+//    public DSInfo getDynamicAction(DSInfo target, String name) {
+//        if(name.equals(Constants.EDITDYNAMODB) && this.isStable()){
+//            DSInfo info = actionInfo(name, makeEditDynamoDBAction()) ;
+//            info.getMetadata().setActionGroup(DSAction.EDIT_GROUP, null);
+//            return info;
+//        }
+//        return super.getDynamicAction(target, name);
+//    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Protected Methods
@@ -114,17 +112,9 @@ public class DynamoDBNode extends DSBaseConnection {
         super.declareDefaults();
         // Add parameters.
         declareDefault(Constants.ACCESSKEY, DSString.valueOf("")).setReadOnly(true);
-        declareDefault(Constants.SECRETKEY, DSPasswordAes128.NULL).setReadOnly(true).setHidden(true);
-        declareDefault(Constants.REGION, DSString.valueOf("")).setReadOnly(true);
+        declareDefault(Constants.SECRETKEY, DSPasswordAes128.NULL).setReadOnly(true);
+        declareDefault(Constants.REGION, Util.getRegions()).setReadOnly(true);
         declareDefault(Constants.ENDPOINT, DSString.valueOf("")).setReadOnly(true);
-
-        // Add actions
-        declareDefault(Constants.QUERYDYNAMODB, makeQueryDynamoDBAction());
-        declareDefault(Constants.SCANDYNAMODB, makeScanDynamoDBAction());
-        declareDefault(Constants.PUTITEMDYNAMODB, makePutItemDynamoDBAction());
-        declareDefault(Constants.BATCHPUTITEMSDYNAMODB, makeBatchPutItemDynamoDBAction());
-        declareDefault(Constants.UPDATEITEMDYNAMODB, makeUpdateItemDynamoDBAction());
-        declareDefault(Constants.DELETEITEMDYNAMODB, makeDeleteItemDynamoDBAction());
     }
 
     @Override
@@ -138,6 +128,18 @@ public class DynamoDBNode extends DSBaseConnection {
     @Override
     protected void onStable() {
         init();
+        enableDynamoDBActions();
+    }
+
+    protected void enableDynamoDBActions() {
+        // Add actions
+        put(Constants.QUERYDYNAMODB, makeQueryDynamoDBAction());
+        put(Constants.SCANDYNAMODB, makeScanDynamoDBAction());
+        put(Constants.PUTITEMDYNAMODB, makePutItemDynamoDBAction());
+        put(Constants.BATCHPUTITEMSDYNAMODB, makeBatchPutItemDynamoDBAction());
+        put(Constants.UPDATEITEMDYNAMODB, makeUpdateItemDynamoDBAction());
+        put(Constants.DELETEITEMDYNAMODB, makeDeleteItemDynamoDBAction());
+        put(Constants.EDITDYNAMODB, makeEditDynamoDBAction());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -158,7 +160,7 @@ public class DynamoDBNode extends DSBaseConnection {
             client.listtable();
             connOk();
         } catch (Exception e) {
-            configFault(e.getMessage().toString());
+            connDown(e.getMessage().toString());
             throw new IllegalStateException(e.getMessage().toString());
         }
     }
@@ -180,7 +182,7 @@ public class DynamoDBNode extends DSBaseConnection {
         };
         act.addParameter(Constants.ACCESSKEY, DSString.valueOf(getAccessKey()), "AWS Access Key");
         act.addParameter(Constants.SECRETKEY, DSString.valueOf(getSecretKey()), "AWS Secret Key");
-        act.addParameter(Constants.REGION, DSString.valueOf(getRegion()), "Region");
+        act.addParameter(Constants.REGION, Util.getRegions(), "Region");
         act.addParameter(Constants.ENDPOINT, DSString.valueOf(getEndpoint()), "End Point");
         return act;
     }
@@ -193,7 +195,8 @@ public class DynamoDBNode extends DSBaseConnection {
 
             }
         };
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.PROJECTIONEXPRESSION, DSValueType.STRING, "ProjectionExpression");
         act.addParameter(Constants.KEYCONDITIONEXPRESSION, DSValueType.STRING, "KeyConditionExpression");
         act.addParameter(Constants.FILTEREXPRESSION, DSValueType.STRING, "FilterExpression");
@@ -223,7 +226,7 @@ public class DynamoDBNode extends DSBaseConnection {
                 return ((DynamoDBNode) info.get()).putItem(this,invocation.getParameters());
             }
         };
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.ITEM, DSValueType.STRING, "Item");
         act.addParameter(Constants.CONDITIONEXPRESSION, DSValueType.STRING, "ConditionExpression");
         act.addParameter(Constants.EXPRESSIONATTRIBUTENAMES, DSValueType.STRING, "Expression Attribute Names");
@@ -240,7 +243,7 @@ public class DynamoDBNode extends DSBaseConnection {
                 return ((DynamoDBNode) info.get()).batchPutItem(this,invocation.getParameters());
             }
         };
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.ITEMS, DSValueType.STRING, "Items");
         act.setResultType(ResultType.VALUES);
         act.addColumnMetadata(Constants.RESULT, DSValueType.STRING);
@@ -254,7 +257,7 @@ public class DynamoDBNode extends DSBaseConnection {
                 return ((DynamoDBNode) info.get()).scanDynamoDB(this,invocation.getParameters());
             }
         };
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.PROJECTIONEXPRESSION, DSValueType.STRING, "ProjectionExpression");
         act.addParameter(Constants.LIMIT, DSInt.valueOf(0), "Limit");
         act.addParameter(Constants.FILTEREXPRESSION, DSValueType.STRING, "FilterExpression");
@@ -282,7 +285,7 @@ public class DynamoDBNode extends DSBaseConnection {
                 return ((DynamoDBNode) info.get()).updateItem(this,invocation.getParameters());
             }
         };
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.PRIMARYKEY, DSValueType.STRING, "Primary Key");
         act.addParameter(Constants.UPDATEEXPRESSION, DSValueType.STRING, "UpdateExpression");
         act.addParameter(Constants.CONDITIONEXPRESSION, DSValueType.STRING, "ConditionExpression");
@@ -301,7 +304,7 @@ public class DynamoDBNode extends DSBaseConnection {
             }
         };
         // Add parameters as needed
-        act.addParameter(Constants.TABLENAME, DSValueType.STRING, "Table Name");
+        act.addParameter(Constants.TABLENAME, Util.getTableNames(client), "Table Name");
         act.addParameter(Constants.PRIMARYKEY, DSValueType.STRING, "Primary Key");
         act.addParameter(Constants.CONDITIONEXPRESSION, DSValueType.STRING, "ConditionExpression");
         act.addParameter(Constants.EXPRESSIONATTRIBUTENAMES, DSValueType.STRING, "Expression Attribute Names");
